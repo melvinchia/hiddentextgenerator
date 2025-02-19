@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hidden Text in Emoji</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+        }
+        .form-container {
+            display: none;
+            margin-top: 20px;
+        }
+        .form-container.active {
+            display: block;
+        }
+        textarea {
+            width: 80%;
+            height: 100px;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 15px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Hidden Unicode Text in Emoji</h2>
+
+    <label>
+        <input type="radio" name="mode" value="encode" checked> Encode
+    </label>
+    <label>
+        <input type="radio" name="mode" value="decode"> Decode
+    </label>
+
+    <!-- Encode Form -->
+    <div id="encode-form" class="form-container active">
+        <h3>Encode Hidden Text into Emoji String</h3>
+        <textarea id="encode-input" placeholder="Enter text to hide..."></textarea><br>
+        <button onclick="encodeText()">Encode</button>
+        <h4>Encoded Emoji String:</h4>
+        <textarea id="encode-output" readonly></textarea>
+    </div>
+
+    <!-- Decode Form -->
+    <div id="decode-form" class="form-container">
+        <h3>Decode Hidden Text from Emoji String</h3>
+        <textarea id="decode-input" placeholder="Enter encoded emoji string..."></textarea><br>
+        <button onclick="decodeText()">Decode</button>
+        <h4>Decoded Hidden Text:</h4>
+        <textarea id="decode-output" readonly></textarea>
+    </div>
+
+    <script>
+        // Toggle between Encode and Decode form
+        document.querySelectorAll('input[name="mode"]').forEach(radio => {
+            radio.addEventListener('change', function () {
+                document.getElementById('encode-form').classList.toggle('active', this.value === "encode");
+                document.getElementById('decode-form').classList.toggle('active', this.value === "decode");
+            });
+        });
+
+        // Encode Function: Hides text using zero-width characters in an emoji string
+        function encodeText() {
+            let text = document.getElementById("encode-input").value;
+            if (!text) return alert("Please enter text to encode!");
+
+            let binaryText = text.split('').map(char => char.charCodeAt(0).toString(2).padStart(8, '0')).join('');
+            let hiddenText = binaryText.replace(/0/g, '\u200B').replace(/1/g, '\u200C');
+
+            let emojiString = "🔮🔥🎩🚀🌈✨🌊🐉🎭🍕🎸⚡🐱🎶🎯" + hiddenText; // Emojis as cover text
+            document.getElementById("encode-output").value = emojiString;
+        }
+
+        // Decode Function: Extracts hidden text from an emoji string
+        function decodeText() {
+            let emojiString = document.getElementById("decode-input").value;
+            if (!emojiString) return alert("Please enter an encoded emoji string!");
+
+            let hiddenChars = [...emojiString].filter(char => char === '\u200B' || char === '\u200C').join('');
+            let binaryText = hiddenChars.replace(/\u200B/g, '0').replace(/\u200C/g, '1');
+
+            let decodedText = binaryText.match(/.{8}/g)?.map(byte => String.fromCharCode(parseInt(byte, 2))).join('') || '';
+            document.getElementById("decode-output").value = decodedText || "No hidden text found.";
+        }
+    </script>
+
+</body>
+</html>
